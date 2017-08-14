@@ -6,16 +6,20 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
+using Google.Cloud.Vision.V1;
 
 
 namespace ConsoleApplication1
 {
     class Program
     {
+        public static object requests { get; private set; }
+
         static void Main()
         {
             //get image into base64string
-            string imageFilePath = "C:\\Jerry Shen\\doc.JPG";
+            string imageFilePath = @"F:\doc.PNG";
             string image_base64string = GetFromImageFile(imageFilePath);
 
 
@@ -37,7 +41,7 @@ namespace ConsoleApplication1
                    }";
             string jsonstring = jsonstring_orig.Replace("rep_image_base64string", image_base64string);
 
-        //    File.WriteAllText(@"C:\\Jerry Shen\\json.json", jsonstring);
+       // File.WriteAllText(@"F:\\json.json", jsonstring);
 
             GoogleTextDection(jsonstring);
 
@@ -48,24 +52,49 @@ namespace ConsoleApplication1
 
         }
 
+        static async void googletextdection(string filePath)
+        {
+            // Load an image from a local file.
+            var image = Image.FromFile(filePath);
+            var client = ImageAnnotatorClient.Create();
+            var response = client.DetectDocumentText(image);
+foreach (var page in response.Pages)
+{
+                foreach (var block in page.Blocks)
+                {
+                    foreach (var paragraph in block.Paragraphs)
+                    {
+                        Console.WriteLine(string.Join("\n", paragraph.Words));
+                    }
+                }
+            }
+        }
+
         //post api
         static async void GoogleTextDection(string jsonstring)
         {
 
             HttpClient client = new HttpClient();
             //put data
+          //  RootObject_post newroot = new RootObject_post();
+          //  newroot.requests = new List<Request> {
+            
+       // };
+           
+      
 
-            var newpost = new RootObject_post
-            {
+               
 
 
 
 
-            };
 
 
-        //    var data = JsonConvert.SerializeObject(jsonstring);         
-             var content = new StringContent(jsonstring.ToString(), Encoding.UTF8, "application/json");
+
+
+
+            var data = JsonConvert.SerializeObject(jsonstring);         
+            var content = new StringContent(jsonstring.ToString(), Encoding.UTF8, "application/json");
       
             //need to think about the api_key 
             var response = await client.PostAsync("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBf3aybUgE0aEvKgFRnBhZVN09V3S-A2js", content);
@@ -78,7 +107,7 @@ namespace ConsoleApplication1
             // Display the JSON response.
             Console.WriteLine("\nResponse:\n");
             Console.WriteLine(JsonPrettyPrint(contentString));
-            File.WriteAllText(@"C:\\Jerry Shen\\google_text_dection.json", contentString);
+            File.WriteAllText(@"F:\\google_text_dection.json", contentString);
 
         }
 
@@ -114,10 +143,12 @@ namespace ConsoleApplication1
         {
             public Image image { get; set; }
             public List<Feature> features { get; set; }
+    
         }
 
         public class RootObject_post
-        {
+        {      
+
             public List<Request> requests { get; set; }
         }
 
